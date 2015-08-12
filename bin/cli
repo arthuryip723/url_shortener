@@ -1,0 +1,51 @@
+# require 'launchy'
+
+def prompt_email
+  puts "Input your email: "
+  gets.chomp
+end
+
+def prompt_choice
+  puts "What do you want to do?"
+  puts "0. Create shortened URL"
+  puts "1. Visit shortened URL"
+  choice = gets.chomp.to_i
+end
+
+def prompt_long_url
+  puts "Type in your long url: "
+  gets.chomp
+end
+
+def prompt_short_url
+  puts "Type in the shortened URL"
+  gets.chomp
+end
+
+def convert
+  email = prompt_email
+
+  user = User.find_by(email: email)
+  # p users
+  if !user
+    user = User.create!(email: email)
+  end
+
+  choice = prompt_choice
+  if choice == 0
+    long_url = prompt_long_url
+    u = ShortenedUrl.create_for_user_and_long_url!(user, long_url)
+    puts u.short_url
+  elsif choice == 1
+    shortened_url_str = prompt_short_url
+    shortened_url = ShortenedUrl.find_by(short_url: shortened_url_str)
+    if shortened_url
+      Visit.record_visit!(user, shortened_url)
+      Launchy.open(shortened_url.long_url)
+    else
+      puts "not a valid url"
+    end
+  end
+end
+
+convert
